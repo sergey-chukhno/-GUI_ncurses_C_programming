@@ -1,5 +1,44 @@
 #include "my_dispute.h"
 
+// ASCII art for login screen from login-ascii.txt
+static const char *login_ascii[] = {
+    " __  __         ____  _                 _               _   _       _   ",
+    "|  \\/  |_   _  |  _ \\(_)___ _ __  _   _| |_ ___        | \\ | | ___ | |_ ",
+    "| |\\/| | | | | | | | | / __| '_ \\| | | | __/ _ \\  _____|  \\| |/ _ \\| __|",
+    "| |  | | |_| | | |_| | \\__ \\ |_) | |_| | ||  __/ |_____| |\\  | (_) | |_ ",
+    "|_|  |_|\\__, | |____/|_|___/ .__/ \\__,_|\\__\\___|       |_| \\_|\\___/ \\__|",
+    "__   __ |___/           ___|_|           _                              ",
+    "\\ \\ / /__  _   _ _ __  | __ )  ___  _ __(_)_ __   __ _                  ",
+    " \\ V / _ \\| | | | '__| |  _ \\ / _ \\| '__| | '_ \\ / _` |                 ",
+    "  | | (_) | |_| | |    | |_) | (_) | |  | | | | | (_| |                 ",
+    " _|_|\\___/ \\__,_|_|    |____/ \\___/|_|  |_|_| |_|\\__, |                 ",
+    "|  _ \\(_)___  ___ ___  _ __ __| |                |___/                  ",
+    "| | | | / __|/ __/ _ \\| '__/ _` |                                       ",
+    "| |_| | \\__ \\ (_| (_) | | | (_| |                                       ",
+    "|____/|_|___/\\___\\___/|_|  \\__,_|                _                      ",
+    "|  \\/  | ___  ___ ___  ___ _ __   __ _  ___ _ __| |                     ",
+    "| |\\/| |/ _ \\/ __/ __|/ _ \\ '_ \\ / _` |/ _ \\ '__| |                     ",
+    "| |  | |  __/\\__ \\__ \\  __/ | | | (_| |  __/ |  |_|                     ",
+    "|_|  |_|\\___||___/___/\\___|_| |_|\\__, |\\___|_|  (_)                     ",
+    "                                 |___/                                  "};
+
+// Helper function to display ASCII art for login/register screens
+static void display_login_ascii(WINDOW *win, int start_y, int start_x)
+{
+  int num_lines = sizeof(login_ascii) / sizeof(login_ascii[0]);
+
+  // Draw the ASCII art with red color
+  wattron(win, COLOR_PAIR(COLOR_BRIGHT_RED) | A_BOLD);
+
+  for (int i = 0; i < num_lines; i++)
+  {
+    mvwprintw(win, start_y + i, start_x, "%s", login_ascii[i]);
+  }
+
+  wattroff(win, COLOR_PAIR(COLOR_BRIGHT_RED) | A_BOLD);
+  wrefresh(win);
+}
+
 // Helper function to get masked input (for passwords)
 static void get_masked_input(WINDOW *win, char *buffer, int max_len, int y, int x)
 {
@@ -159,13 +198,27 @@ int login_screen()
 {
   clear();
 
-  // Create login form window
+  // Create a window for the ASCII art
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
 
+  // Calculate sizes for the ASCII art
+  int ascii_height = sizeof(login_ascii) / sizeof(login_ascii[0]);
+  int ascii_width = strlen(login_ascii[0]);
+  int ascii_win_height = ascii_height + 2; // +2 for spacing
+  int ascii_win_width = ascii_width + 4;   // +4 for spacing
+
+  // Create ASCII art window - without border
+  WINDOW *ascii_win = newwin(ascii_win_height, ascii_win_width, 2, (max_x - ascii_win_width) / 2);
+
+  // Display the ASCII art
+  display_login_ascii(ascii_win, 1, 2);
+  wrefresh(ascii_win);
+
+  // Create login form window - position adjusted to be below ASCII art
   int form_height = 8;
   int form_width = 50;
-  int start_y = (max_y - form_height) / 2;
+  int start_y = 2 + ascii_win_height + 1; // Position below ASCII art
   int start_x = (max_x - form_width) / 2;
 
   WINDOW *login_win = newwin(form_height, form_width, start_y, start_x);
@@ -211,6 +264,7 @@ int login_screen()
   }
 
   delwin(login_win);
+  delwin(ascii_win);
   return success;
 }
 
@@ -218,13 +272,27 @@ int register_screen()
 {
   clear();
 
-  // Create registration form window
+  // Create a window for the ASCII art
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
 
+  // Calculate sizes for the ASCII art
+  int ascii_height = sizeof(login_ascii) / sizeof(login_ascii[0]);
+  int ascii_width = strlen(login_ascii[0]);
+  int ascii_win_height = ascii_height + 2; // +2 for spacing
+  int ascii_win_width = ascii_width + 4;   // +4 for spacing
+
+  // Create ASCII art window - without border
+  WINDOW *ascii_win = newwin(ascii_win_height, ascii_win_width, 2, (max_x - ascii_win_width) / 2);
+
+  // Display the ASCII art
+  display_login_ascii(ascii_win, 1, 2);
+  wrefresh(ascii_win);
+
+  // Create registration form window - position adjusted to be below ASCII art
   int form_height = 12;
   int form_width = 60;
-  int start_y = (max_y - form_height) / 2;
+  int start_y = 2 + ascii_win_height + 1; // Position below ASCII art
   int start_x = (max_x - form_width) / 2;
 
   WINDOW *reg_win = newwin(form_height, form_width, start_y, start_x);
@@ -287,6 +355,7 @@ int register_screen()
   {
     wgetch(reg_win);
     delwin(reg_win);
+    delwin(ascii_win);
     return 0;
   }
 
@@ -304,5 +373,6 @@ int register_screen()
   }
 
   delwin(reg_win);
+  delwin(ascii_win);
   return success;
 }
