@@ -23,7 +23,7 @@ void initialize_app()
   if (network_connect())
   {
     network_connected = 1;
-    fprintf(stderr, "Connected to server successfully\n");
+    // fprintf(stderr, "Connected to server successfully\n");
   }
   else
   {
@@ -151,11 +151,11 @@ int main(int argc, char *argv[])
       // Refresh channel and user lists since we're online
       network_get_channels();
       network_get_users();
-      fprintf(stderr, "Authenticated with server successfully\n");
+      // fprintf(stderr, "Authenticated with server successfully\n");
     }
     else
     {
-      fprintf(stderr, "Warning: Server authentication failed. Running in offline mode.\n");
+      // fprintf(stderr, "Warning: Server authentication failed. Running in offline mode.\n");
     }
   }
   else if (network_init())
@@ -165,11 +165,11 @@ int main(int argc, char *argv[])
     // Refresh channel and user lists since we're online
     network_get_channels();
     network_get_users();
-    fprintf(stderr, "Connected and authenticated with server successfully\n");
+    // fprintf(stderr, "Connected and authenticated with server successfully\n");
   }
   else
   {
-    fprintf(stderr, "Warning: Unable to connect to server. Running in offline mode.\n");
+    // fprintf(stderr, "Warning: Unable to connect to server. Running in offline mode.\n");
   }
 
   // Main input loop
