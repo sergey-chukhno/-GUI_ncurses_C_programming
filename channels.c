@@ -1,41 +1,49 @@
 #include "my_dispute.h"
+#include "network.h"
 
 int create_channel(AppState *state, char *name)
 {
-  // Check if we already have too many channels
+  // Check if the channel already exists locally
+  for (int i = 0; i < state->channel_count; i++)
+  {
+    if (strcmp(state->channels[i].name, name) == 0)
+    {
+      // Channel already exists
+      return 0;
+    }
+  }
+
+  // Check if we have space for a new channel
   if (state->channel_count >= MAX_CHANNELS)
   {
     return 0;
   }
 
-  // Check if the channel name is valid
-  if (strlen(name) == 0 || strlen(name) >= MAX_CHANNEL_NAME_LEN)
-  {
-    return 0;
-  }
+  // Try to create channel on the server first
+  int network_result = network_create_channel(name);
 
-  // Check if channel with that name already exists
-  for (int i = 0; i < state->channel_count; i++)
-  {
-    if (strcmp(state->channels[i].name, name) == 0)
-    {
-      return 0;
-    }
-  }
-
-  // Create the new channel
-  strcpy(state->channels[state->channel_count].name, name);
+  // Add channel locally
+  strncpy(state->channels[state->channel_count].name, name, MAX_CHANNEL_NAME_LEN - 1);
   state->channels[state->channel_count].message_count = 0;
 
-  // Add a system message to the channel
-  Message *msg = &state->channels[state->channel_count].messages[0];
-  strcpy(msg->sender, "SYSTEM");
-  sprintf(msg->text, "Channel '%s' created by %s", name,
-          state->users[state->current_user_index].username);
-  msg->timestamp = time(NULL);
-  state->channels[state->channel_count].message_count = 1;
+  // Create welcome message
+  Message *welcome = &state->channels[state->channel_count].messages[0];
+  strncpy(welcome->sender, "SYSTEM", MAX_USERNAME_LEN - 1);
 
-  // Increment channel count
+  if (network_result)
+  {
+    snprintf(welcome->text, MAX_MESSAGE_LEN, "Channel '%s' created and synchronized with server", name);
+    fprintf(stderr, "Channel created on server successfully\n");
+  }
+  else
+  {
+    snprintf(welcome->text, MAX_MESSAGE_LEN, "Channel '%s' created locally (offline mode)", name);
+    fprintf(stderr, "Warning: Failed to create channel on server. Channel exists locally only.\n");
+  }
+
+  welcome->timestamp = time(NULL);
+
+  state->channels[state->channel_count].message_count = 1;
   state->channel_count++;
 
   return 1;
@@ -43,50 +51,56 @@ int create_channel(AppState *state, char *name)
 
 int delete_channel(AppState *state, char *name)
 {
-  int channel_index = -1;
-
-  // Find channel with the given name
+  // Find the channel index
+  int channel_idx = -1;
   for (int i = 0; i < state->channel_count; i++)
   {
     if (strcmp(state->channels[i].name, name) == 0)
     {
-      channel_index = i;
+      channel_idx = i;
       break;
     }
   }
 
-  // If channel not found
-  if (channel_index == -1)
+  if (channel_idx == -1)
+  {
+    // Channel not found
+    return 0;
+  }
+
+  // Don't allow deleting default channels (first 3)
+  if (channel_idx < 3)
   {
     return 0;
   }
 
-  // Don't allow deletion of default channels (first 3)
-  if (channel_index < 3)
+  // Try to delete the channel on the server
+  int network_result = network_delete_channel(name);
+  if (network_result)
   {
-    return 0;
+    fprintf(stderr, "Channel deleted on server successfully\n");
+  }
+  else
+  {
+    fprintf(stderr, "Warning: Failed to delete channel on server. Channel removed locally only.\n");
   }
 
-  // Move all channels after this one up one slot
-  for (int i = channel_index; i < state->channel_count - 1; i++)
+  // Shift channels to remove the deleted one
+  for (int i = channel_idx; i < state->channel_count - 1; i++)
   {
-    strcpy(state->channels[i].name, state->channels[i + 1].name);
-    memcpy(&state->channels[i].messages, &state->channels[i + 1].messages,
-           sizeof(Message) * MAX_MESSAGES);
-    state->channels[i].message_count = state->channels[i + 1].message_count;
+    memcpy(&state->channels[i], &state->channels[i + 1], sizeof(Channel));
   }
 
-  // Decrement channel count
   state->channel_count--;
 
-  // If current channel was deleted, move to the general channel
-  if (state->current_channel_index == channel_index)
+  // If current channel was deleted, switch to general
+  if (state->current_channel_index == channel_idx)
   {
-    state->current_channel_index = 0;
+    state->current_channel_index = 0; // Switch to first channel (general)
   }
-  else if (state->current_channel_index > channel_index)
+  else if (state->current_channel_index > channel_idx)
   {
-    // If current channel was after the deleted one, adjust the index
+    // Adjust current channel index if it was after the deleted one
     state->current_channel_index--;
   }
 
@@ -103,6 +117,10 @@ int join_channel(AppState *state, int channel_index)
 
   // Switch to the new channel
   state->current_channel_index = channel_index;
+
+  // Refresh messages from server for this channel if needed
+  // This is a placeholder - the actual implementation would depend on how
+  // you want to handle channel subscriptions with the server
 
   return 1;
 }

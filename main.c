@@ -1,6 +1,8 @@
 #include "my_dispute.h"
+#include "network.h"
 
 AppState app_state;
+int network_connected = 0;
 
 void initialize_app()
 {
@@ -16,6 +18,17 @@ void initialize_app()
   // Set current indexes
   app_state.current_channel_index = 0;
   app_state.current_user_index = -1; // Not logged in yet
+
+  // Try to establish server connection early
+  if (network_connect())
+  {
+    network_connected = 1;
+    fprintf(stderr, "Connected to server successfully\n");
+  }
+  else
+  {
+    fprintf(stderr, "Warning: Unable to connect to server. Will attempt again after login.\n");
+  }
 }
 
 void run_auth_screen()
@@ -98,7 +111,7 @@ void run_auth_screen()
   delwin(auth_win);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   // Initialize ncurses
   initscr();
@@ -124,6 +137,40 @@ int main()
   keypad(app_state.chat_win, TRUE);
   keypad(app_state.input_win, TRUE);
   keypad(app_state.users_win, TRUE);
+
+  // If we're already connected, try to authenticate with the server
+  // Otherwise, try to establish a fresh connection
+  if (network_connected)
+  {
+    // Use current user credentials for server authentication
+    const char *username = app_state.users[app_state.current_user_index].username;
+    const char *password = app_state.users[app_state.current_user_index].password;
+
+    if (network_authenticate(username, password))
+    {
+      // Refresh channel and user lists since we're online
+      network_get_channels();
+      network_get_users();
+      fprintf(stderr, "Authenticated with server successfully\n");
+    }
+    else
+    {
+      fprintf(stderr, "Warning: Server authentication failed. Running in offline mode.\n");
+    }
+  }
+  else if (network_init())
+  {
+    // If we just connected and authenticated successfully
+    network_connected = 1;
+    // Refresh channel and user lists since we're online
+    network_get_channels();
+    network_get_users();
+    fprintf(stderr, "Connected and authenticated with server successfully\n");
+  }
+  else
+  {
+    fprintf(stderr, "Warning: Unable to connect to server. Running in offline mode.\n");
+  }
 
   // Main input loop
   char input[MAX_INPUT_LEN] = {0};

@@ -1,0 +1,3 @@
+clang: error: no such file or directory: 'main.o'
+clang: error: no such file or directory: 'auth.o'
+clang: error: no such file or directory: 'network.o'

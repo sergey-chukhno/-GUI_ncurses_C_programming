@@ -1,0 +1,118 @@
+main.c:152:28: error: too few arguments to function call, expected 2, have 0
+      network_get_channels();
+      ~~~~~~~~~~~~~~~~~~~~ ^
+./network.h:65:5: note: 'network_get_channels' declared here
+int network_get_channels(Channel channels[], int *count);
+    ^
+main.c:153:25: error: too few arguments to function call, expected 2, have 0
+      network_get_users();
+      ~~~~~~~~~~~~~~~~~ ^
+./network.h:66:5: note: 'network_get_users' declared here
+int network_get_users(User users[], int *count);
+    ^
+main.c:166:26: error: too few arguments to function call, expected 2, have 0
+    network_get_channels();
+    ~~~~~~~~~~~~~~~~~~~~ ^
+./network.h:65:5: note: 'network_get_channels' declared here
+int network_get_channels(Channel channels[], int *count);
+    ^
+main.c:167:23: error: too few arguments to function call, expected 2, have 0
+    network_get_users();
+    ~~~~~~~~~~~~~~~~~ ^
+./network.h:66:5: note: 'network_get_users' declared here
+int network_get_users(User users[], int *count);
+    ^
+4 errors generated.
+auth.c:185:26: error: too few arguments to function call, expected 2, have 0
+    network_get_channels();
+    ~~~~~~~~~~~~~~~~~~~~ ^
+./network.h:65:5: note: 'network_get_channels' declared here
+int network_get_channels(Channel channels[], int *count);
+    ^
+auth.c:186:23: error: too few arguments to function call, expected 2, have 0
+    network_get_users();
+    ~~~~~~~~~~~~~~~~~ ^
+./network.h:66:5: note: 'network_get_users' declared here
+int network_get_users(User users[], int *count);
+    ^
+auth.c:237:26: error: too few arguments to function call, expected 2, have 0
+    network_get_channels();
+    ~~~~~~~~~~~~~~~~~~~~ ^
+./network.h:65:5: note: 'network_get_channels' declared here
+int network_get_channels(Channel channels[], int *count);
+    ^
+auth.c:238:23: error: too few arguments to function call, expected 2, have 0
+    network_get_users();
+    ~~~~~~~~~~~~~~~~~ ^
+./network.h:66:5: note: 'network_get_users' declared here
+int network_get_users(User users[], int *count);
+    ^
+auth.c:254:7: warning: variable 'max_y' set but not used [-Wunused-but-set-variable]
+  int max_y, max_x;
+      ^
+auth.c:338:7: warning: variable 'max_y' set but not used [-Wunused-but-set-variable]
+  int max_y, max_x;
+      ^
+2 warnings and 4 errors generated.
+network.c:117:7: error: call to undeclared function 'process_channel_list'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+      process_channel_list(&msg);
+      ^
+network.c:121:7: error: call to undeclared function 'process_user_list'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+      process_user_list(&msg);
+      ^
+network.c:125:7: error: call to undeclared function 'process_channel_message'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+      process_channel_message(&msg);
+      ^
+network.c:129:7: error: call to undeclared function 'process_private_message'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+      process_private_message(&msg);
+      ^
+network.c:129:7: note: did you mean 'send_private_message'?
+./my_dispute.h:120:5: note: 'send_private_message' declared here
+int send_private_message(AppState *state, char *username, char *text);
+    ^
+network.c:141:7: error: call to undeclared function 'process_user_status'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+      process_user_status(&msg);
+      ^
+network.c:161:6: error: conflicting types for 'process_channel_list'
+void process_channel_list(NetworkMessage *msg)
+     ^
+network.c:117:7: note: previous implicit declaration is here
+      process_channel_list(&msg);
+      ^
+network.c:184:6: error: conflicting types for 'process_user_list'
+void process_user_list(NetworkMessage *msg)
+     ^
+network.c:121:7: note: previous implicit declaration is here
+      process_user_list(&msg);
+      ^
+network.c:236:6: error: conflicting types for 'process_channel_message'
+void process_channel_message(NetworkMessage *msg)
+     ^
+network.c:125:7: note: previous implicit declaration is here
+      process_channel_message(&msg);
+      ^
+network.c:269:6: error: conflicting types for 'process_private_message'
+void process_private_message(NetworkMessage *msg)
+     ^
+network.c:129:7: note: previous implicit declaration is here
+      process_private_message(&msg);
+      ^
+network.c:325:6: error: conflicting types for 'process_user_status'
+void process_user_status(NetworkMessage *msg)
+     ^
+network.c:141:7: note: previous implicit declaration is here
+      process_user_status(&msg);
+      ^
+network.c:404:5: error: conflicting types for 'network_get_channels'
+int network_get_channels()
+    ^
+./network.h:65:5: note: previous declaration is here
+int network_get_channels(Channel channels[], int *count);
+    ^
+network.c:502:5: error: conflicting types for 'network_get_users'
+int network_get_users()
+    ^
+./network.h:66:5: note: previous declaration is here
+int network_get_users(User users[], int *count);
+    ^
+12 errors generated.

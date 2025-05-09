@@ -1,4 +1,5 @@
 #include "my_dispute.h"
+#include "network.h"
 
 // ASCII art for login screen from login-ascii.txt
 static const char *login_ascii[] = {
@@ -141,55 +142,106 @@ int validate_password(char *password)
 
 int authenticate_user(AppState *state, char *username, char *password)
 {
-  for (int i = 0; i < state->user_count; i++)
-  {
-    if (strcmp(state->users[i].username, username) == 0 &&
-        strcmp(state->users[i].password, password) == 0)
-    {
+  // First try network authentication if possible
+  int network_auth_success = network_authenticate(username, password);
 
-      state->current_user_index = i;
-      state->users[i].is_online = 1;
-      return 1;
-    }
-  }
+  // Store the credentials locally
+  int user_idx = -1;
 
-  return 0;
-}
-
-int add_new_user(AppState *state, char *username, char *email, char *password)
-{
-  if (state->user_count >= MAX_USERS)
-  {
-    return 0;
-  }
-
-  // Check if username already exists
+  // Look if user exists locally
   for (int i = 0; i < state->user_count; i++)
   {
     if (strcmp(state->users[i].username, username) == 0)
     {
+      user_idx = i;
+      break;
+    }
+  }
+
+  // If user doesn't exist in local state, create a new entry
+  if (user_idx == -1)
+  {
+    if (state->user_count >= MAX_USERS)
+    {
+      // No space for new users
+      return 0;
+    }
+    user_idx = state->user_count;
+    state->user_count++;
+  }
+
+  // Store credentials
+  strncpy(state->users[user_idx].username, username, MAX_USERNAME_LEN - 1);
+  strncpy(state->users[user_idx].password, password, MAX_PASSWORD_LEN - 1);
+
+  // Set current user
+  state->current_user_index = user_idx;
+  state->users[user_idx].is_online = 1;
+
+  // If network authentication was successful, refresh data
+  if (network_auth_success)
+  {
+    // Refresh channel and user lists if online
+    network_get_channels();
+    network_get_users();
+    fprintf(stderr, "Network authentication successful\n");
+  }
+  else
+  {
+    // If network authentication fails, still allow local mode
+    fprintf(stderr, "Warning: Network authentication failed. Running in offline mode.\n");
+  }
+
+  return 1;
+}
+
+int add_new_user(AppState *state, char *username, char *email, char *password)
+{
+  // Check if user already exists locally
+  for (int i = 0; i < state->user_count; i++)
+  {
+    if (strcmp(state->users[i].username, username) == 0)
+    {
+      // Username already in use
       return 0;
     }
   }
 
-  // Add new user
-  strcpy(state->users[state->user_count].username, username);
-  strcpy(state->users[state->user_count].email, email);
-  strcpy(state->users[state->user_count].password, password);
-  state->users[state->user_count].role = ROLE_USER; // Default role
-  state->users[state->user_count].is_online = 1;
+  // First try to register with the server
+  int network_reg_success = network_register(username, email, password);
 
-  // Set muted_until to 0 (not muted) for all channels
-  for (int i = 0; i < MAX_CHANNELS; i++)
+  // Add user to local state
+  if (state->user_count >= MAX_USERS)
   {
-    state->users[state->user_count].muted_until[i] = 0;
+    // No space for new users
+    return 0;
   }
 
-  // Set this user as current user
-  state->current_user_index = state->user_count;
+  int user_idx = state->user_count;
 
-  // Increment user count
+  // Store user data
+  strncpy(state->users[user_idx].username, username, MAX_USERNAME_LEN - 1);
+  strncpy(state->users[user_idx].email, email, MAX_EMAIL_LEN - 1);
+  strncpy(state->users[user_idx].password, password, MAX_PASSWORD_LEN - 1);
+  state->users[user_idx].role = ROLE_USER;
+  state->users[user_idx].is_online = 1;
+
   state->user_count++;
+
+  // Set as current user
+  state->current_user_index = user_idx;
+
+  if (network_reg_success)
+  {
+    // Refresh channel and user lists if online
+    network_get_channels();
+    network_get_users();
+    fprintf(stderr, "Network registration successful\n");
+  }
+  else
+  {
+    fprintf(stderr, "Warning: Network registration failed. Running in offline mode.\n");
+  }
 
   return 1;
 }

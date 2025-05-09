@@ -1,67 +1,100 @@
-# MY DISPUTE - Discord-like TUI
+# My Dispute - Discord-like Terminal Interface
 
-A terminal-based chat interface with Discord-like functionality, built with ncurses in C.
+This is a terminal-based Discord-like interface implemented in C using ncurses. It provides a UI for channel-based messaging, private messaging, user roles, and moderation features.
 
 ## Features
 
-- User authentication (registration and login)
-- Channel-based messaging
-- Private messaging between users
-- User roles (regular user, moderator, administrator)
-- Message reactions with emojis
-- Moderation features (muting users)
-- Cyberpunk styling with neon colors
+- Multi-user chat with channels
+- Private messaging
+- User authentication and registration
+- Roles-based permission system
+- Moderation tools (mute users)
+- Channel management
 
-## Requirements
+## Client-Server Architecture
 
-- C compiler (GCC recommended)
-- ncurses library
+The application follows a client-server architecture:
 
-## Building
+### Server
+- Manages user authentication and registration
+- Stores and relays messages to clients
+- Maintains user status (online/offline)
+- Handles channel creation and deletion
+- Enforces permissions based on user roles
+
+### Client
+- Provides a terminal UI using ncurses
+- Connects to the server via TCP sockets
+- Displays channels, users, and messages
+- Sends user actions to the server
+- Updates the UI based on server responses
+
+## Building the Application
+
+To build both the client and server:
 
 ```
-make
+make all
 ```
 
-## Usage
+To build just the client:
 
-Run the application:
+```
+make my_dispute
+```
+
+To build just the server:
+
+```
+make my_dispute_server
+```
+
+## Running the Application
+
+First, start the server:
+
+```
+./my_dispute_server
+```
+
+Then, in another terminal, start the client:
 
 ```
 ./my_dispute
 ```
 
-### Account Creation
+Multiple clients can connect to the same server.
 
-When starting the application, you have two options:
-1. Create a new user account
-2. Login to an existing account
+## Default Channels and Users
 
-For new accounts:
-- Username must be at least 3 characters
-- Password must be at least 8 characters, include 1 uppercase letter and 1 special character
+The server creates the following default channels:
+- general
+- random
+- help
 
-### Commands
+It also creates an admin user:
+- Username: admin
+- Password: admin123
 
-Once logged in, the following commands are available:
+## Client Usage
 
-- `/msg channel_name message_text` - Send a message to a specific channel
-- `/pm username message_text` - Send a private message to a user
-- `/mute username minutes` - (Moderator+) Mute a user for specified minutes
-- `/create channel_name` - (Admin only) Create a new channel
-- `/delete channel_name` - (Admin only) Delete a channel
-- `/setrole username role` - (Admin only) Set a user's role (1=user, 2=moderator, 3=admin)
+- Arrow keys to navigate
+- Enter to select
+- ESC to go back
+- /command syntax for special commands
 
-### Navigation
+## Server Commands
 
-- Arrow keys to navigate between channels and users
-- F10 to exit the application
+The server supports the following commands:
+- /create [channel] - Create a new channel (admin only)
+- /delete [channel] - Delete a channel (admin only)
+- /mute [user] [minutes] - Mute a user (admin/mod only)
+- /role [user] [1-3] - Set user role (admin only)
 
-## User Roles
-
-1. User - Can send messages and private messages
-2. Moderator - Can mute users on channels
-3. Administrator - Can create/delete channels and manage user roles
+## Roles
+1. User
+2. Moderator
+3. Admin
 
 ## License
 
