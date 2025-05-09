@@ -1,27 +1,38 @@
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Iinclude
 LDFLAGS = -lncurses -lpanel -lpthread
+OBJDIR = build
 
-# Client objects
-CLIENT_OBJS = main.o ui.o auth.o channels.o messaging.o users.o network.o
+# Source files
+CLIENT_SRCS = src/client/main.c src/client/ui.c src/client/auth.c src/client/channels.c src/client/messaging.c src/client/users.c src/shared/network.c
+SERVER_SRCS = src/server/server.c src/server/server_handlers.c src/server/server_main.c
 
-# Server objects
-SERVER_OBJS = server.o server_handlers.o server_main.o
+# Object files
+CLIENT_OBJS = $(addprefix $(OBJDIR)/, main.o ui.o auth.o channels.o messaging.o users.o network.o)
+SERVER_OBJS = $(addprefix $(OBJDIR)/, server.o server_handlers.o server_main.o)
 
-all: my_dispute my_dispute_server
+all: $(OBJDIR)/my_dispute $(OBJDIR)/my_dispute_server
 
 # Client executable
-my_dispute: $(CLIENT_OBJS)
+$(OBJDIR)/my_dispute: $(CLIENT_OBJS)
 	$(CC) -o $@ $(CLIENT_OBJS) $(LDFLAGS)
 
 # Server executable
-my_dispute_server: $(SERVER_OBJS)
+$(OBJDIR)/my_dispute_server: $(SERVER_OBJS)
 	$(CC) -o $@ $(SERVER_OBJS) $(LDFLAGS)
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) $<
+# Pattern rule for building object files
+$(OBJDIR)/%.o: src/client/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o: src/server/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o: src/shared/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f *.o my_dispute my_dispute_server
+	rm -rf $(OBJDIR)/*.o $(OBJDIR)/my_dispute $(OBJDIR)/my_dispute_server
 
 .PHONY: all clean 
