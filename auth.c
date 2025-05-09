@@ -224,6 +224,9 @@ int login_screen()
   WINDOW *login_win = newwin(form_height, form_width, start_y, start_x);
   box(login_win, 0, 0);
 
+  // Enable keypad mode for special key input
+  keypad(login_win, TRUE);
+
   // Display title
   wattron(login_win, COLOR_PAIR(COLOR_NEON_PINK) | A_BOLD);
   mvwprintw(login_win, 1, (form_width - 5) / 2, "LOGIN");
@@ -241,11 +244,18 @@ int login_screen()
   char username[MAX_USERNAME_LEN] = {0};
   char password[MAX_PASSWORD_LEN] = {0};
 
-  echo();
+  // Set input mode for username
+  cbreak(); // Line buffering disabled
+  echo();   // Echo input
+
+  // Get username
   wmove(login_win, 3, 15);
   get_text_input(login_win, username, MAX_USERNAME_LEN, 3, 15);
 
-  noecho();
+  // Set input mode for password
+  noecho(); // Don't echo password
+
+  // Get password
   wmove(login_win, 5, 15);
   get_masked_input(login_win, password, MAX_PASSWORD_LEN, 5, 15);
 
@@ -298,6 +308,9 @@ int register_screen()
   WINDOW *reg_win = newwin(form_height, form_width, start_y, start_x);
   box(reg_win, 0, 0);
 
+  // Enable keypad mode for special key input
+  keypad(reg_win, TRUE);
+
   // Display title
   wattron(reg_win, COLOR_PAIR(COLOR_NEON_PINK) | A_BOLD);
   mvwprintw(reg_win, 1, (form_width - 13) / 2, "REGISTRATION");
@@ -320,14 +333,21 @@ int register_screen()
   char email[MAX_EMAIL_LEN] = {0};
   char password[MAX_PASSWORD_LEN] = {0};
 
-  echo();
+  // Set input mode for text fields
+  cbreak(); // Line buffering disabled
+  echo();   // Echo input
+
+  // Get username and email
   wmove(reg_win, 3, 15);
   get_text_input(reg_win, username, MAX_USERNAME_LEN, 3, 15);
 
   wmove(reg_win, 5, 15);
   get_text_input(reg_win, email, MAX_EMAIL_LEN, 5, 15);
 
-  noecho();
+  // Set input mode for password
+  noecho(); // Don't echo password
+
+  // Get password
   wmove(reg_win, 7, 15);
   get_masked_input(reg_win, password, MAX_PASSWORD_LEN, 7, 15);
 
