@@ -11,23 +11,33 @@ This is a terminal-based Discord-like interface implemented in C using ncurses. 
 - Moderation tools (mute users)
 - Channel management
 
-## Client-Server Architecture
+## Project Structure
 
-The application follows a client-server architecture:
+```
+.
+├── src/
+│   ├── client/      # Client-side source files
+│   ├── server/      # Server-side source files
+│   └── shared/      # Shared source files
+├── include/         # Header files
+├── assets/          # ASCII art and other assets
+├── build/           # Compiled binaries and object files
+├── logs/            # Log files (optional)
+├── .env             # Environment variables
+├── .gitignore
+├── Dockerfile
+├── Makefile
+└── README.md
+```
 
-### Server
-- Manages user authentication and registration
-- Stores and relays messages to clients
-- Maintains user status (online/offline)
-- Handles channel creation and deletion
-- Enforces permissions based on user roles
+## Environment Variables
 
-### Client
-- Provides a terminal UI using ncurses
-- Connects to the server via TCP sockets
-- Displays channels, users, and messages
-- Sends user actions to the server
-- Updates the UI based on server responses
+You can configure the server IP and port using a `.env` file:
+
+```
+SERVER_PORT=8888
+SERVER_IP=127.0.0.1
+```
 
 ## Building the Application
 
@@ -37,33 +47,41 @@ To build both the client and server:
 make all
 ```
 
-To build just the client:
-
-```
-make my_dispute
-```
-
-To build just the server:
-
-```
-make my_dispute_server
-```
+Binaries will be placed in the `build/` directory:
+- Client: `build/my_dispute`
+- Server: `build/my_dispute_server`
 
 ## Running the Application
 
 First, start the server:
 
 ```
-./my_dispute_server
+./build/my_dispute_server
 ```
 
 Then, in another terminal, start the client:
 
 ```
-./my_dispute
+./build/my_dispute
 ```
 
-Multiple clients can connect to the same server.
+You can start multiple clients in separate terminals to simulate multiple users.
+
+## Running with Docker
+
+Build the Docker image:
+
+```
+docker build -t my_dispute .
+```
+
+Run the server in a container:
+
+```
+docker run -it --rm -p 8888:8888 my_dispute
+```
+
+You can then connect clients from your host or other containers to the server at `localhost:8888`.
 
 ## Default Channels and Users
 
@@ -80,7 +98,7 @@ It also creates an admin user:
 
 - Arrow keys to navigate
 - Enter to select
-- ESC to go back
+- Tab to switch focus
 - /command syntax for special commands
 
 ## Server Commands
@@ -89,7 +107,7 @@ The server supports the following commands:
 - /create [channel] - Create a new channel (admin only)
 - /delete [channel] - Delete a channel (admin only)
 - /mute [user] [minutes] - Mute a user (admin/mod only)
-- /role [user] [1-3] - Set user role (admin only)
+- /setrole [user] [1-3] - Set user role (admin only)
 
 ## Roles
 1. User
